@@ -31,7 +31,9 @@ class MaxCube(MaxDevice):
         self.init()
 
     def init(self):
-        self.update()
+        self.connection.connect()
+        response = self.connection.response
+        self.parse_response(response)
         self.log()
 
     def log(self):
@@ -55,10 +57,10 @@ class MaxCube(MaxDevice):
                 logger.info('Device (rf=%s, name=%s' % (device.rf_address, device.name))
 
     def update(self):
-        self.connection.connect()
+        self.connection.send('l:\r\n')
         response = self.connection.response
+        logger.debug('Response: ' + response)
         self.parse_response(response)
-        self.connection.disconnect()
 
     def get_devices(self):
         return self.devices
@@ -270,10 +272,8 @@ class MaxCube(MaxDevice):
         command = 's:' + base64.b64encode(bytearray.fromhex(byte_cmd)).decode('utf-8') + '\r\n'
         logger.debug('Command: ' + command)
 
-        self.connection.connect()
         self.connection.send(command)
         logger.debug('Response: ' + self.connection.response)
-        self.connection.disconnect()
         thermostat.target_temperature = int(temperature * 2) / 2.0
         thermostat.mode = mode
 
